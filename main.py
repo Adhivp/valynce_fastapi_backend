@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 import uvicorn
+from database import test_db_connection
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -11,6 +12,12 @@ app = FastAPI(
     description="Basic FastAPI template with health and CRUD endpoints",
     version="1.0.0"
 )
+
+# Test database connection on startup
+@app.on_event("startup")
+async def startup_event():
+    print("🚀 Starting Valynce API...")
+    test_db_connection()
 
 # CORS middleware configuration
 app.add_middleware(
@@ -52,6 +59,15 @@ async def root():
 # Health check endpoint
 @app.get("/health")
 async def health_check():
+    """Health check endpoint"""
+    db_status = test_db_connection()
+    return {
+        "status": "healthy" if db_status else "unhealthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "Valynce API",
+        "database": "connected" if db_status else "disconnected"
+    } 
+def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
