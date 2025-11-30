@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 from typing import Optional, List, Dict, Any
 from aptos_sdk.account import Account
+from aptos_sdk.account_address import AccountAddress
 from aptos_sdk.async_client import RestClient, FaucetClient
 from aptos_sdk.transactions import EntryFunction, TransactionArgument, TransactionPayload
 from aptos_sdk.bcs import Serializer
@@ -32,25 +33,13 @@ class AptosService:
         }
     
     async def get_account_balance(self, address: str) -> int:
-        """Get account balance in octas"""
+        """Get account balance in octas using the official SDK method"""
         try:
-            # First check if account exists
-            try:
-                await self.client.account(address)
-            except Exception as acc_err:
-                print(f"Account does not exist: {acc_err}")
-                return 0
-            
-            # Get account resources
-            resources = await self.client.account_resources(address)
-            for resource in resources:
-                if resource["type"] == "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>":
-                    return int(resource["data"]["coin"]["value"])
-            
-            # Account exists but no CoinStore means balance is 0
-            # This is normal for accounts that haven't received any coins yet
-            print(f"Account {address} exists but has no CoinStore registered")
-            return 0
+            # Convert string address to AccountAddress object
+            account_address = AccountAddress.from_str(address)
+            # Use the built-in account_balance method from RestClient
+            balance = await self.client.account_balance(account_address)
+            return balance
         except Exception as e:
             print(f"Error getting balance for {address}: {e}")
             return 0
