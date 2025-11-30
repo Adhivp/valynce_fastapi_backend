@@ -3,7 +3,7 @@ Dataset API Routes
 """
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from database import get_db
 from models import Dataset, User, License, Transaction
@@ -28,8 +28,7 @@ class DatasetResponse(BaseModel):
     owner_username: str
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DatasetCreate(BaseModel):
     title: str
@@ -59,8 +58,7 @@ class LicenseResponse(BaseModel):
     price_paid: float
     purchased_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 @router.get("/", response_model=List[DatasetResponse])
 async def get_all_datasets(

@@ -77,7 +77,7 @@ async def create_account():
 @router.get("/account/balance/{address}", response_model=BalanceResponse)
 async def get_balance(address: str):
     """Get account balance"""
-    balance = aptos_service.get_account_balance(address)
+    balance = await aptos_service.get_account_balance(address)
     return {
         "address": address,
         "balance": balance,
@@ -87,7 +87,7 @@ async def get_balance(address: str):
 @router.post("/account/fund")
 async def fund_account(request: FundAccountRequest):
     """Fund account from testnet faucet"""
-    success = aptos_service.fund_account_from_faucet(request.address, request.amount)
+    success = await aptos_service.fund_account_from_faucet(request.address, request.amount)
     if success:
         return {
             "success": True,
@@ -194,4 +194,4 @@ async def set_royalty(request: SetRoyaltyRequest):
 @router.get("/transaction/{tx_hash}")
 async def get_transaction(tx_hash: str):
     """Get transaction status"""
-    return aptos_service.get_transaction_status(tx_hash)
+    return await aptos_service.get_transaction_status(tx_hash)
