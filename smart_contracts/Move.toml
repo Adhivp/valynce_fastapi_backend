@@ -1,0 +1,19 @@
+[package]
+name = "Valynce"
+version = "1.0.0"
+authors = []
+
+[addresses]
+# This will be replaced with your deployed address
+addr = "0x203e9bf58c965f98b788b20732faaf8dc135a827c2803935e623718226722964"
+
+[dev-addresses]
+# For testing
+addr = "0x1"
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-framework"
+
+[dev-dependencies]

@@ -4,20 +4,24 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 import uvicorn
-from database import test_db_connection
+from database import test_db_connection, init_db
+from aptos_routes import router as aptos_router
+from dataset_routes import router as dataset_router
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Valynce API",
-    description="Basic FastAPI template with health and CRUD endpoints",
-    version="1.0.0"
+    description="Dataset Marketplace with Aptos Blockchain Integration",
+    version="2.0.0"
 )
 
-# Test database connection on startup
+# Test database connection and initialize on startup
 @app.on_event("startup")
 async def startup_event():
     print("🚀 Starting Valynce API...")
     test_db_connection()
+    init_db()
+    print("✅ Database initialized!")
 
 # CORS middleware configuration
 app.add_middleware(
@@ -27,6 +31,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(aptos_router)
+app.include_router(dataset_router)
 
 # Pydantic models
 class Item(BaseModel):
@@ -50,10 +58,12 @@ item_counter = 1
 async def root():
     """Root endpoint returning API information"""
     return {
-        "message": "Welcome to Valynce API",
-        "version": "1.0.0",
+        "message": "Welcome to Valynce - Dataset Marketplace",
+        "version": "2.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "aptos": "/aptos",
+        "datasets": "/api/datasets"
     }
 
 # Health check endpoint
@@ -66,13 +76,6 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "service": "Valynce API",
         "database": "connected" if db_status else "disconnected"
-    } 
-def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "service": "Valynce API"
     }
 
 # Get all items

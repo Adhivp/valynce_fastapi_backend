@@ -35,6 +35,12 @@ def get_db():
     finally:
         db.close()
 
+# Initialize database tables
+def init_db():
+    """Create all tables"""
+    Base.metadata.create_all(bind=engine)
+    print("✅ Database tables created successfully!")
+
 # Test database connection
 def test_db_connection():
     """Test the database connection"""
