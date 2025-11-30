@@ -87,14 +87,10 @@ async def get_balance(address: str):
 @router.post("/account/fund")
 async def fund_account(request: FundAccountRequest):
     """Fund account from testnet faucet"""
-    success = await aptos_service.fund_account_from_faucet(request.address, request.amount)
-    if success:
-        return {
-            "success": True,
-            "message": f"Account funded with {request.amount / 100000000} APT",
-            "address": request.address
-        }
-    raise HTTPException(status_code=500, detail="Failed to fund account")
+    result = await aptos_service.fund_account_from_faucet(request.address, request.amount)
+    if result["success"]:
+        return result
+    raise HTTPException(status_code=500, detail=result.get("message", "Failed to fund account"))
 
 @router.post("/dataset/mint")
 async def mint_dataset(request: MintDatasetRequest):

@@ -34,23 +34,55 @@ class AptosService:
     async def get_account_balance(self, address: str) -> int:
         """Get account balance in octas"""
         try:
+            # First check if account exists
+            try:
+                await self.client.account(address)
+            except Exception as acc_err:
+                print(f"Account does not exist: {acc_err}")
+                return 0
+            
+            # Get account resources
             resources = await self.client.account_resources(address)
             for resource in resources:
                 if resource["type"] == "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>":
                     return int(resource["data"]["coin"]["value"])
+            
+            # Account exists but no CoinStore means balance is 0
+            # This is normal for accounts that haven't received any coins yet
+            print(f"Account {address} exists but has no CoinStore registered")
             return 0
         except Exception as e:
-            print(f"Error getting balance: {e}")
+            print(f"Error getting balance for {address}: {e}")
             return 0
     
-    async def fund_account_from_faucet(self, address: str, amount: int = 100000000) -> bool:
-        """Fund account from testnet faucet (100000000 = 1 APT)"""
+    async def fund_account_from_faucet(self, address: str, amount: int = 100000000) -> dict:
+        """Fund account from testnet faucet (100000000 = 1 APT)
+        This will automatically register the CoinStore if it doesn't exist
+        """
         try:
+            # The faucet automatically registers the coin store when funding
             await self.faucet_client.fund_account(address, amount)
-            return True
+            
+            # Wait a moment for the transaction to be processed
+            import asyncio
+            await asyncio.sleep(2)
+            
+            # Get the new balance
+            balance = await self.get_account_balance(address)
+            return {
+                "success": True,
+                "balance_octas": balance,
+                "balance_apt": balance / 100000000,
+                "message": "Account funded successfully"
+            }
         except Exception as e:
-            print(f"Error funding account: {e}")
-            return False
+            error_msg = str(e)
+            print(f"Error funding account: {error_msg}")
+            return {
+                "success": False,
+                "error": error_msg,
+                "message": "Failed to fund account. Please try again."
+            }
     
     async def mint_dataset_nft(
         self, 
